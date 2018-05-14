@@ -9,6 +9,12 @@
  */
 package org.lasque.tusdk.psy.suite;
 
+import android.app.Activity;
+
+import com.psy.util.Common;
+
+import org.lasque.tusdk.Base;
+import org.lasque.tusdk.Group.GroupType;
 import org.lasque.tusdk.TuSdkGeeV1;
 import org.lasque.tusdk.core.TuSdkResult;
 import org.lasque.tusdk.core.utils.TLog;
@@ -20,12 +26,6 @@ import org.lasque.tusdk.impl.activity.TuFragment;
 import org.lasque.tusdk.impl.components.TuEditMultipleComponent;
 import org.lasque.tusdk.modules.components.TuSdkComponent.TuSdkComponentDelegate;
 import org.lasque.tusdk.modules.components.TuSdkHelperComponent;
-import org.lasque.tusdk.Base;
-import org.lasque.tusdk.Group.GroupType;
-
-import android.app.Activity;
-
-import com.psy.util.Common;
 
 import cn.xdu.poscam.R;
 
@@ -34,10 +34,10 @@ import cn.xdu.poscam.R;
  * 
  * @author Clear
  */
-public class EditMultipleComponent extends Base
+public class EditAlbumMultipleComponent extends Base
 {
 	/** 照片美化组件范例 */
-	public EditMultipleComponent()
+	public EditAlbumMultipleComponent()
 	{
 		super(GroupType.SuiteSample, R.string.sample_EditMultipleComponent);
 	}
@@ -86,20 +86,16 @@ public class EditMultipleComponent extends Base
 		};
 
 
-		TuEditMultipleComponent component = TuSdkGeeV1.editMultipleCommponent(activity, delegate);
 
-		component.componentOption().editFilterOption().setEnableFilterConfig(true);
 
-		component.setImage(Common.bitmap)
-				// 设置系统照片
-				//.setImageSqlInfo(result.imageSqlInfo)
-				// 设置临时文件
-				//.setTempFilePath(result.imageFile)
-				// 在组件执行完成后自动关闭组件
-				.setAutoDismissWhenCompleted(true)
-				// 开启组件
-				.showComponent();
-
+		TuSdkGeeV1.albumCommponent(activity, new TuSdkComponentDelegate()
+		{
+			@Override
+			public void onComponentFinished(TuSdkResult result, Error error, TuFragment lastFragment)
+			{
+				openEditMultiple(result, error, lastFragment);
+			}
+		}).showComponent();
 	}
 
 	/** 开启照片美化组件 */
@@ -114,6 +110,14 @@ public class EditMultipleComponent extends Base
 			public void onComponentFinished(TuSdkResult result, Error error, TuFragment lastFragment)
 			{
 				TLog.d("onEditMultipleComponentReaded: %s | %s", result, error);
+				
+				// 默认输出为 Bitmap  -> result.image
+				
+				// 如果保存到临时文件 (默认不保存, 当设置为true时, TuSdkResult.imageFile, 处理完成后将自动清理原始图片)
+				// option.setSaveToTemp(true);  ->  result.imageFile
+
+				// 保存到系统相册 (默认不保存, 当设置为true时, TuSdkResult.sqlInfo, 处理完成后将自动清理原始图片)
+				// option.setSaveToAlbum(true);  -> result.image
 			}
 		};
 
