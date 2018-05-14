@@ -52,10 +52,11 @@ public class DefineCameraBase extends Base
 		// see-http://tusdk.com/docs/android/api/org/lasque/tusdk/impl/components/base/TuSdkHelperComponent.html
 		this.componentHelper = new TuSdkHelperComponent(activity);
 		DefineCameraBaseFragment defineCameraBaseFragment = new DefineCameraBaseFragment();
-		Bundle args = new Bundle();
-		args.putString(Common.fragParamName,Common.fragParam);
-		defineCameraBaseFragment.setArguments(args);
-
+		if(Common.fragParamName!=null &&Common.fragParam !=null) {
+			Bundle args = new Bundle();
+			args.putString(Common.fragParamName, Common.fragParam);
+			defineCameraBaseFragment.setArguments(args);
+		}
 		this.componentHelper.presentModalNavigationActivity(
 				defineCameraBaseFragment, true);
 	}

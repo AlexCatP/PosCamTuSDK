@@ -18,6 +18,7 @@ import java.util.List;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.lasque.tusdk.EntryActivity;
 import org.lasque.tusdk.core.TuSdk;
 import org.lasque.tusdk.core.TuSdkResult;
 import org.lasque.tusdk.core.seles.tusdk.FilterLocalPackage;
@@ -35,17 +36,26 @@ import org.lasque.tusdk.impl.components.camera.TuCameraFilterView.TuCameraFilter
 import org.lasque.tusdk.impl.components.camera.TuFocusTouchView;
 import org.lasque.tusdk.modules.view.widget.filter.GroupFilterItem;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.StrictMode;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -60,14 +70,19 @@ import android.widget.Toast;
 import com.psy.model.Param;
 import com.psy.model.PosLib;
 import com.psy.model.YouTuTag;
+import com.psy.my.DetailActivity;
 import com.psy.my.LoginActivity;
 import com.psy.my.MyActivityManager;
+import com.psy.my.PhotoProcessActivity;
 import com.psy.my.PosLibActivity;
 import com.psy.my.PosPicAdapter;
+import com.psy.my.RegActivity;
+import com.psy.my.UserActivity;
 import com.psy.my.ZoomImageView;
 import com.psy.util.BitmapUtil;
 import com.psy.util.Common;
 import com.psy.util.DataConvert;
+import com.psy.util.GenericProgressDialog;
 import com.psy.util.HttpHelper;
 import com.psy.util.URL;
 import com.youtu.Youtu;
@@ -76,8 +91,7 @@ import cn.finalteam.galleryfinal.FunctionConfig;
 import cn.finalteam.galleryfinal.GalleryFinal;
 import cn.finalteam.galleryfinal.model.PhotoInfo;
 import cn.xdu.poscam.R;
-import gaochun.camera.GenericProgressDialog;
-import gaochun.camera.PhotoProcessActivity;
+
 
 /**
  * 快速相机范例
@@ -91,35 +105,48 @@ public class DefineCameraBaseFragment extends TuFragment {
     private int flashStatus = 0;
     public static int frontStatus = 0;
 
-    /** 布局ID */
-    public static final int layoutId = R.layout.demo_define_camera_base_fragment;
+    /**
+     * 布局ID
+     */
+    public static final int layoutId = R.layout.define_camera_base_fragment;
 
     public DefineCameraBaseFragment() {
         this.setRootViewLayoutId(layoutId);
     }
 
-    /** 相机视图 */
+    /**
+     * 相机视图
+     */
     private RelativeLayout cameraView;
-
-
-
 
 
     // 底部栏
     // private RelativeLayout bottomBar;
-    /** 拍摄按钮 */
+    /**
+     * 拍摄按钮
+     */
     private Button captureButton;
-    /** 滤镜选择栏 */
+    /**
+     * 滤镜选择栏
+     */
     private TuCameraFilterView filterBar;
-    /** 滤镜开关按钮 */
+    /**
+     * 滤镜开关按钮
+     */
     private Button filterToggleButton;
-    /** 闪光灯按钮列表 */
+    /**
+     * 闪光灯按钮列表
+     */
     private ArrayList<TextView> mFlashBtns = new ArrayList<TextView>(3);
-    /** 相机对象 */
+    /**
+     * 相机对象
+     */
     private TuSdkStillCameraInterface mCamera;
-    /** 默认闪关灯模式 */
+    /**
+     * 默认闪关灯模式
+     */
     private CameraFlash mFlashModel = CameraFlash.Off;
-    
+
     private Activity activity;
     private static final int REQUEST_CODE = 100;
     private String photo_path;
@@ -130,12 +157,12 @@ public class DefineCameraBaseFragment extends TuFragment {
      */
     private static ZoomImageView zoomImageView;
 
-    private ImageView my;
+    private ImageView my,map;
 
     private static Bitmap bitmap;
     private static String imgURL;
 
-    private Bitmap bmp1;
+    public static Bitmap bmp1;
 
     public static LinearLayout resultll;
     private TextView resultTxt;
@@ -148,7 +175,7 @@ public class DefineCameraBaseFragment extends TuFragment {
     private ArrayList<HashMap<String, Object>> ArrayListHashMap;
     private HashMap<String, Object> hashMap;
     public static GridView gridView;
-    private ImageView flashBtn,switchBtn;
+    private ImageView flashBtn, switchBtn;
 
     private Button mBtnSearch;
     private Button mBtnTakePhoto;
@@ -157,7 +184,7 @@ public class DefineCameraBaseFragment extends TuFragment {
     public static int PIC_FOR_SELECT = 12;
     public static int PIC_FOR_DETAIL = 13;
 
-    String imgPath,detailImgPath,analysis;
+    String imgPath, detailImgPath, analysis, analysis1;
 
 
     private Handler handler = new Handler() {
@@ -165,7 +192,48 @@ public class DefineCameraBaseFragment extends TuFragment {
         public void handleMessage(Message msg) {
             if (msg.what == 1) {
 
+//                if (analysis!=null && analysis.equals("analysis1"))
+//                {
+//
+//                    tags = new ArrayList<>();
+//                    YouTuTag youTuTag4 = new YouTuTag();
+//                    youTuTag4.setTagConfidence(60);
+//                    youTuTag4.setTagName("奥斯卡");
+//                    tags.add(youTuTag4);
+//
+//                    YouTuTag youTuTag1 = new YouTuTag();
+//                    youTuTag1.setTagConfidence(50);
+//                    youTuTag1.setTagName("合影");
+//                    tags.add(youTuTag1);
+//
+//                    YouTuTag youTuTag2 = new YouTuTag();
+//                    youTuTag2.setTagConfidence(40);
+//                    youTuTag2.setTagName("演出");
+//                    tags.add(youTuTag2);
+//
+//                    YouTuTag youTuTag3 = new YouTuTag();
+//                    youTuTag3.setTagConfidence(30);
+//                    youTuTag3.setTagName("晚会");
+//                    tags.add(youTuTag3);
+//
+//                    YouTuTag youTuTag = new YouTuTag();
+//                    youTuTag.setTagConfidence(20);
+//                    youTuTag.setTagName("灯");
+//                    tags.add(youTuTag);
+//
+//
+//                    YouTuTag youTuTag5 = new YouTuTag();
+//                    youTuTag5.setTagConfidence(5);
+//                    youTuTag5.setTagName("演员");
+//                    tags.add(youTuTag5);
+//
+//                }else{
+//                    tags = HttpHelper.getTags((JSONObject) msg.obj);
+//                }
+
                 tags = HttpHelper.getTags((JSONObject) msg.obj);
+
+                System.out.println("tags=" + tags);
                 if (tags.size() == 0) {
                     dismissProgressDialog(activity);
                     Toast.makeText(activity, "图片格式错误或图片破损",
@@ -189,7 +257,7 @@ public class DefineCameraBaseFragment extends TuFragment {
                                     DataConvert.getMergedParam(param.getTag_id(), param.getWeight());
 
                             String json = postData(DataConvert.toJsonArray(param3));
-                            System.out.println("----param=" + DataConvert.toJsonArray(param3)+" json="+json);
+                            //System.out.println("----param=" + DataConvert.toJsonArray(param3)+" json="+json);
                             arrHM = HttpHelper.AnalysisPosInfo2(json);
 
                             if (arrHM != null) {
@@ -235,6 +303,11 @@ public class DefineCameraBaseFragment extends TuFragment {
                 }
 
             }
+
+            if (msg.what == -1) {
+                loadFail(msg.obj.toString());
+            }
+
         }
     };
 
@@ -243,6 +316,13 @@ public class DefineCameraBaseFragment extends TuFragment {
         paramHM.put("json", param);
         return HttpHelper.postData(URL.GET_RESULT, paramHM, null);
     }
+
+
+    private void loadFail(String str) {
+        dismissProgressDialog(activity);
+        Common.display(activity, str);
+    }
+
 
     @Override
     protected void loadView(ViewGroup view) {
@@ -274,11 +354,12 @@ public class DefineCameraBaseFragment extends TuFragment {
 
         flashBtn = this.getViewById(R.id.flash_view);
 
-        resultll =  this.getViewById(R.id.resultll);
-        resultTxt =  this.getViewById(R.id.resultTxt);
-        mBtnSearch =  this.getViewById(R.id.search);
-        mBtnTakePhoto =  this.getViewById(R.id.takephoto);
+        resultll = this.getViewById(R.id.resultll);
+        resultTxt = this.getViewById(R.id.resultTxt);
+        mBtnSearch = this.getViewById(R.id.search);
+        mBtnTakePhoto = this.getViewById(R.id.takephoto);
         my = this.getViewById(R.id.my);
+        map = this.getViewById(R.id.map);
         switchBtn = this.getViewById(R.id.camera_flip_view);
         zoomImageView = this.getViewById(R.id.zoom_image_view);
         gridView = this.getViewById(R.id.gview);
@@ -289,30 +370,13 @@ public class DefineCameraBaseFragment extends TuFragment {
         mBtnTakePhoto.setOnClickListener(mClickListener);
         my.setOnClickListener(mClickListener);
         switchBtn.setOnClickListener(mClickListener);
+        map.setOnClickListener(mClickListener);
 
 
         // 设置是否显示前后摄像头切换按钮
         this.showViewIn(switchBtn, CameraHelper.cameraCounts() > 1);
 
 
-        switch (flashStatus) {
-            case 0:
-                mFlashModel = CameraFlash.Off;
-                flashBtn.setImageResource(R.drawable.camera_flash_off);
-                break;
-            case 1:
-                mFlashModel = CameraFlash.On;
-                flashBtn.setImageResource(R.drawable.camera_flash_on);
-                break;
-            case 2:
-                mFlashModel = CameraFlash.Auto;
-                flashBtn.setImageResource(R.drawable.camera_flash_auto);
-                break;
-            default:
-                break;
-        }
-
-        this.setFlashModel(mFlashModel);
     }
 
     @Override
@@ -341,13 +405,34 @@ public class DefineCameraBaseFragment extends TuFragment {
         mCamera.startCameraCapture();
 
 
-        if (getArguments()!=null) {
+        switch (flashStatus) {
+            case 0:
+                mFlashModel = CameraFlash.Off;
+                flashBtn.setImageResource(R.drawable.camera_flash_off);
+                break;
+            case 1:
+                mFlashModel = CameraFlash.On;
+                flashBtn.setImageResource(R.drawable.camera_flash_on);
+                break;
+            case 2:
+                mFlashModel = CameraFlash.Auto;
+                flashBtn.setImageResource(R.drawable.camera_flash_auto);
+                break;
+            default:
+                break;
+        }
+
+        this.setFlashModel(mFlashModel);
+
+
+        if (getArguments() != null) {
             zoomImageView = this.getViewById(R.id.zoom_image_view);
             //System.out.println("getArguments()="+getArguments());
-            if (zoomImageView!=null){
-             imgPath = getArguments().getString("image_path");
-             detailImgPath = getArguments().getString("detail_image_path");
-             analysis = getArguments().getString("extra");}
+            if (zoomImageView != null) {
+                imgPath = getArguments().getString("image_path");
+                detailImgPath = getArguments().getString("detail_image_path");
+                analysis = getArguments().getString("extra");
+            }
         }
 
 
@@ -356,8 +441,10 @@ public class DefineCameraBaseFragment extends TuFragment {
         }
         if (detailImgPath != null) setZoomImg(detailImgPath);
 
-        if (analysis!=null && analysis.equals("analysis"))
-            imgAnalysis();
+        if (analysis != null) {
+            if (analysis.equals("analysis") || analysis.equals("analysis1"))
+                imgAnalysis();
+        }
     }
 
     @Override
@@ -377,8 +464,14 @@ public class DefineCameraBaseFragment extends TuFragment {
         StrictMode.ThreadPolicy policy = new
                 StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
-
         activity = this.getActivity();
+        if (ContextCompat.checkSelfPermission(activity,
+                Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(activity,
+                    new String[]{Manifest.permission.CAMERA,
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+        }
     }
 
     @Override
@@ -398,9 +491,12 @@ public class DefineCameraBaseFragment extends TuFragment {
         editor.putInt("front", frontStatus);
         editor.commit();
 
+
     }
 
-    /** 滤镜选择栏委托 */
+    /**
+     * 滤镜选择栏委托
+     */
     private TuCameraFilterViewDelegate mFilterBarDelegate = new TuCameraFilterViewDelegate() {
         /**
          * @param view
@@ -435,7 +531,9 @@ public class DefineCameraBaseFragment extends TuFragment {
         }
     };
 
-    /** 按钮点击事件 */
+    /**
+     * 按钮点击事件
+     */
     private OnClickListener mClickListener = new OnSafeClickListener() {
         @Override
         public void onSafeClick(View v) {
@@ -444,6 +542,9 @@ public class DefineCameraBaseFragment extends TuFragment {
 //                case R.id.cancelButton:
 //                    handleCancelAction();
 //                    break;
+                case R.id.map:
+                    Common.display(getActivity(),"景点定位功能正在开发中...");
+                    break;
                 // 闪光灯
                 case R.id.flash_view:
                     handleFlashAction();
@@ -514,33 +615,39 @@ public class DefineCameraBaseFragment extends TuFragment {
         }
     };
 
-    /** 取消动作 */
+    /**
+     * 取消动作
+     */
     private void handleCancelAction() {
         this.dismissActivityWithAnim();
     }
 
-    /** 滤镜开关切换按钮 */
+    /**
+     * 滤镜开关切换按钮
+     */
     protected void handleToggleFilterAction() {
         filterBar.showGroupView();
     }
 
-    /** 闪光灯动作 */
+    /**
+     * 闪光灯动作
+     */
     private void handleFlashAction() {
         switch (flashStatus) {
             case 0:
                 mFlashModel = CameraFlash.On;
                 flashBtn.setImageResource(R.drawable.camera_flash_on);
-                flashStatus=1;
+                flashStatus = 1;
                 break;
             case 1:
                 mFlashModel = CameraFlash.Auto;
                 flashBtn.setImageResource(R.drawable.camera_flash_auto);
-                flashStatus=2;
+                flashStatus = 2;
                 break;
             case 2:
                 mFlashModel = CameraFlash.Off;
                 flashBtn.setImageResource(R.drawable.camera_flash_off);
-                flashStatus=0;
+                flashStatus = 0;
                 break;
             default:
                 break;
@@ -550,7 +657,9 @@ public class DefineCameraBaseFragment extends TuFragment {
         this.setFlashModel(mFlashModel);
     }
 
-    /** 设置闪光灯模式 */
+    /**
+     * 设置闪光灯模式
+     */
     private void setFlashModel(CameraFlash flashMode) {
         mFlashModel = flashMode;
         if (mCamera != null) {
@@ -558,18 +667,22 @@ public class DefineCameraBaseFragment extends TuFragment {
         }
     }
 
-    /** 切换摄像头 */
+    /**
+     * 切换摄像头
+     */
     private void handleSwitchCameraAction() {
-        if (frontStatus==1)
-            frontStatus=2;
-        else frontStatus=1;
+        if (frontStatus == 1)
+            frontStatus = 2;
+        else frontStatus = 1;
 
         if (mCamera != null) {
             mCamera.rotateCamera();
         }
     }
 
-    /** 拍照 */
+    /**
+     * 拍照
+     */
     private void handleCaptureAction() {
         if (mCamera != null) {
             mCamera.captureImage();
@@ -594,7 +707,9 @@ public class DefineCameraBaseFragment extends TuFragment {
         return true;
     }
 
-    /** 相机监听委托 */
+    /**
+     * 相机监听委托
+     */
     private TuSdkStillCameraListener mCameraListener = new TuSdkStillCameraListener() {
         /**
          * 相机状态改变 (如需操作UI线程， 请检查当前线程是否为主线程)
@@ -665,15 +780,10 @@ public class DefineCameraBaseFragment extends TuFragment {
     }
 
     public static void setZoomImg(String imgPath) {
-        if (imgPath!=null) {
-
-            // 取出图片路径，并解析成Bitmap对象，然后在ZoomImageView中显示
-//        BitmapFactory.Options options1 = new BitmapFactory.Options();
-//        options1.inSampleSize = 2;//图片高宽度都为原来的二分之一，即图片大小为原来的大小的四分之一
-//        options1.inTempStorage = new byte[5 * 1024]; //设置16MB的临时存储空间（不过作用还没看出来，待验证）
-            System.out.println("imgPath="+imgPath);
+        if (imgPath != null) {
+            System.out.println("imgPath=" + imgPath);
             bitmap = BitmapFactory.decodeFile(imgPath);
-            if (bitmap!=null) {
+            if (bitmap != null) {
                 zoomImageView.setImageBitmap(bitmap);
                 zoomImageView.setAlpha((float) 0.5);
                 if (zoomImageView.getVisibility() == View.VISIBLE ||
@@ -688,7 +798,9 @@ public class DefineCameraBaseFragment extends TuFragment {
         }
     }
 
-    /** 测试方法 */
+    /**
+     * 测试方法
+     */
     private void test(TuSdkResult result) {
         result.logInfo();
 
@@ -701,7 +813,6 @@ public class DefineCameraBaseFragment extends TuFragment {
         this.getActivity().finish();
 
     }
-
 
 
     private AlertDialog mAlertDialog;
@@ -764,7 +875,7 @@ public class DefineCameraBaseFragment extends TuFragment {
                                             Common.SECRET_ID, Common.SECRET_KEY,
                                             Youtu.API_YOUTU_END_POINT);
                                     try {
-                                        showProgressDialog("分析中",activity);
+                                        showProgressDialog("分析中", activity);
                                         respose = faceYoutu.ImageTag(bmp1);
                                     } catch (KeyManagementException e) {
                                         // TODO Auto-generated catch block
@@ -784,8 +895,15 @@ public class DefineCameraBaseFragment extends TuFragment {
                                         e.printStackTrace();
                                     }
                                     Message msg = handler.obtainMessage();
-                                    msg.what = 1;
-                                    msg.obj = respose;
+                                    int flag = Common.isNetworkAvailable(activity);
+                                    if (flag == 0) {
+                                        msg.what = -1;
+                                        msg.obj = "请开启手机网络";
+                                    } else {
+                                        msg.what = 1;
+                                        msg.obj = respose;
+                                    }
+
                                     handler.sendMessage(msg);
                                     System.out.println(respose + "");
                                     // bmp1.recycle();
@@ -819,7 +937,7 @@ public class DefineCameraBaseFragment extends TuFragment {
                             Youtu.API_YOUTU_END_POINT);
                     try {
 
-                        showProgressDialog("分析中",activity);
+                        showProgressDialog("分析中", activity);
                         respose = faceYoutu.ImageTag(Common.bitmap);
                     } catch (KeyManagementException e) {
                         // TODO Auto-generated catch block
@@ -839,20 +957,34 @@ public class DefineCameraBaseFragment extends TuFragment {
                         e.printStackTrace();
                     }
                     Message msg = handler.obtainMessage();
-                    msg.what = 1;
-                    msg.obj = respose;
+                    int flag = Common.isNetworkAvailable(activity);
+                    if (flag == 0) {
+                        msg.what = -1;
+                        msg.obj = "请开启手机网络";
+                    } else {
+                        msg.what = 1;
+                        msg.obj = respose;
+                    }
                     handler.sendMessage(msg);
                     System.out.println(respose + "");
-//                    if (!Common.bitmap.isRecycled())
-//                    {
-//                        Common.bitmap.recycle();
-//                    }
-
                 }
                 Looper.loop();
 
             }
         }).start();
+    }
+
+    @Override
+    public boolean onBackPressed() {
+        DefineCameraBaseFragment.bmp1 = null;
+        Common.bitmap = null;
+        Common.fragParamName = null;
+        Common.fragParam = null;
+        Intent intent = new Intent();
+        intent.setClass(getActivity(), EntryActivity.class);
+        getActivity().finish();
+        startActivity(intent);
+        return true;
     }
 
 
