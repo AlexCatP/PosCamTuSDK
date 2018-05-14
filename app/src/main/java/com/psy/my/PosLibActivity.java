@@ -5,10 +5,14 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.StrictMode;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.GridView;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import com.psy.model.PosLib;
@@ -31,13 +35,18 @@ public class PosLibActivity extends Activity implements View.OnClickListener {
 
     private ArrayList<HashMap<String, Object>> ArrayListHashMap;
     private HashMap<String, Object> hashMap;
-    private LinearLayout loading, mainContent, frontll, notFrontll;
+    private LinearLayout loading, mainContent, frontll, notFrontll,search;
     private ArrayList<HashMap<String, Object>> ah;
     private Button boy, girl, gruop, couple, kid, boyself, girlself,hotSelf,hot;
+    private EditText searchEdt;
+    private ImageView searchBtn;
 
     private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
+            if (Common.isVisible)
+                search.setVisibility(View.VISIBLE);
+            else search.setVisibility(View.GONE);
             switch (msg.what) {
                 case -1:
                     loadFail(msg.obj.toString());
@@ -78,6 +87,9 @@ public class PosLibActivity extends Activity implements View.OnClickListener {
         boyself = (Button) findViewById(R.id.boySelf);
         hotSelf = (Button)findViewById(R.id.hotlSelf);
         hot = (Button) findViewById(R.id.hot);
+        search = (LinearLayout) findViewById(R.id.search);
+        searchEdt = (EditText) findViewById(R.id.searchEdt);
+        searchBtn = (ImageView) findViewById(R.id.searchBtn);
 
         boy.setOnClickListener(this);
         girl.setOnClickListener(this);
@@ -88,6 +100,7 @@ public class PosLibActivity extends Activity implements View.OnClickListener {
         boyself.setOnClickListener(this);
         hotSelf.setOnClickListener(this);
         hot.setOnClickListener(this);
+        searchBtn.setOnClickListener(this);
 
 
         if (DefineCameraBaseFragment.frontStatus == 1) {
@@ -142,45 +155,73 @@ public class PosLibActivity extends Activity implements View.OnClickListener {
                 try {
                     ah = new ArrayList<>();
                     switch (id) {
+                        case R.id.searchBtn:
+                            if (searchEdt.getText().toString().trim().length() > 0) {
+                                    ah = HttpHelper.AnalysisPosInfo(HttpHelper.sendGet(
+                                            URL.FIND_POS_BY_TAG, "tag=" + searchEdt.getText().toString().trim()));
+                                if (ah==null){
+                                    Message msg = handler.obtainMessage();
+                                    msg.what = -1;
+                                    msg.obj = "未能搜索到相关pose，请试试其他关键词";
+                                    handler.sendMessage(msg);
+                                }
+
+                            }else {
+                                Message msg = handler.obtainMessage();
+                                msg.what = -1;
+                                msg.obj = "输入不能为空";
+                                handler.sendMessage(msg);
+                            }
+                            break;
                         case R.id.hot:
                             ah = HttpHelper.AnalysisPosInfo(HttpHelper.sendGet(
                                     URL.FIND_POS_BY_TYPE_NOT12,null));
+                            Common.isVisible = true;
                             break;
                         case R.id.hotlSelf:
                             ah = HttpHelper.AnalysisPosInfo(HttpHelper.sendGet(
                                     URL.FIND_POS_BY_TYPE12,null));
+                            Common.isVisible = true;
                             break;
                         case R.id.girlSelf:
                             ah = HttpHelper.AnalysisPosInfo(HttpHelper.sendGet(
                                     URL.FIND_POS_BY_ID_TID, "tid=1"));
+                            Common.isVisible = false;
                             break;
 
                         case R.id.boySelf:
                             ah = HttpHelper.AnalysisPosInfo(HttpHelper.sendGet(
                                     URL.FIND_POS_BY_ID_TID, "tid=2"));
+                            Common.isVisible = false;
                             break;
 
                         case R.id.girl:
                             ah = HttpHelper.AnalysisPosInfo(HttpHelper.sendGet(
                                     URL.FIND_POS_BY_ID_TID, "tid=3"));
+                            Common.isVisible = false;
                             break;
                         case R.id.boy:
                             ah = HttpHelper.AnalysisPosInfo(HttpHelper.sendGet(
                                     URL.FIND_POS_BY_ID_TID, "tid=4"));
+                            Common.isVisible = false;
                             break;
                         case R.id.couple:
                             ah = HttpHelper.AnalysisPosInfo(HttpHelper.sendGet(
                                     URL.FIND_POS_BY_ID_TID, "tid=5"));
+                            Common.isVisible = false;
                             break;
                         case R.id.group:
                             ah = HttpHelper.AnalysisPosInfo(HttpHelper.sendGet(
                                     URL.FIND_POS_BY_ID_TID, "tid=6"));
+                            Common.isVisible = false;
                             break;
                         case R.id.kid:
                             ah = HttpHelper.AnalysisPosInfo(HttpHelper.sendGet(
                                     URL.FIND_POS_BY_ID_TID, "tid=7"));
+                            Common.isVisible = false;
                             break;
                     }
+
 
 
                     if (ah != null) {
@@ -191,7 +232,12 @@ public class PosLibActivity extends Activity implements View.OnClickListener {
                     } else {
                         Message msg = handler.obtainMessage();
                         msg.what = -1;
-                        msg.obj = "未加载到图片 :(";
+                        int flag = Common.isNetworkAvailable(PosLibActivity.this);
+                        if (flag==0){
+                            msg.obj = "请开启手机网络";
+                        }else {
+                            msg.obj = "未加载到图片 :(";
+                        }
                         handler.sendMessage(msg);
                     }
                 } catch (JSONException e) {
@@ -259,6 +305,9 @@ public class PosLibActivity extends Activity implements View.OnClickListener {
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
+            case R.id.searchBtn:
+                initData(R.id.searchBtn);
+                break;
             case R.id.hot:
                 setBarStyle(hot);
                 initData(R.id.hot);
@@ -320,6 +369,10 @@ public class PosLibActivity extends Activity implements View.OnClickListener {
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK
                 && event.getRepeatCount() == 0) {
+            DefineCameraBaseFragment.bmp1 = null;
+            Common.bitmap = null;
+            Common.fragParamName = null;
+            Common.fragParam = null;
             new DefineCameraBase().showSample(this);
             finish();
             return true;
