@@ -15,7 +15,7 @@
         android:id="@+id/btnStart"
         android:layout_width="wrap_content"
         android:layout_height="45dp"
-        android:layout_marginTop="530dp"
+        android:layout_marginTop="545dp"
         android:layout_marginBottom="60dp"
         android:paddingLeft="20dp"
         android:paddingRight="20dp"

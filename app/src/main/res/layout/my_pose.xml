@@ -155,6 +155,7 @@
                     android:textSize="16sp" />
 
             </LinearLayout>
+
             <RelativeLayout
                 android:id="@+id/hideAdd"
                 android:layout_width="match_parent"
@@ -209,98 +210,8 @@
         </LinearLayout>
 
 
-        <!--
-          <LinearLayout
-              android:id="@+id/logoutll"
-              android:layout_width="match_parent"
-              android:layout_height="50dp"
-              android:background="@drawable/two_side_bar"
-              android:gravity="center"
-              android:orientation="horizontal">
-
-              <TextView
-                  android:layout_width="wrap_content"
-                  android:layout_height="match_parent"
-                  android:gravity="center"
-                  android:text="退出登录"
-                  android:textColor="@color/lightGray"
-                  android:textSize="18sp" />
-          </LinearLayout>
-          -->
-
-
     </LinearLayout>
 
-
-    <!--
-    <LinearLayout
-        android:id="@+id/myViewScore"
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:background="@drawable/two_side_bar"
-        android:gravity="center_vertical"
-        android:orientation="horizontal" >
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_marginLeft="15dp"
-            android:gravity="center"
-            android:text="查看成绩"
-            android:textColor="@color/black"
-            android:textSize="16sp" />
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_marginRight="15dp"
-            android:layout_weight="1"
-            android:gravity="right"
-            android:orientation="horizontal" >
-
-            <ImageView
-                android:layout_width="14dp"
-                android:layout_height="20dp"
-                android:layout_gravity="center"
-                android:scaleType="fitCenter"
-                android:src="@drawable/arrow_gray" />
-        </LinearLayout>
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/myChangePw"
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:background="@drawable/one_side_bar"
-        android:gravity="center_vertical"
-        android:orientation="horizontal" >
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_marginLeft="15dp"
-            android:gravity="center"
-            android:text="修改密码"
-            android:textColor="@color/black"
-            android:textSize="16sp" />
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_marginRight="15dp"
-            android:layout_weight="1"
-            android:gravity="right"
-            android:orientation="horizontal" >
-
-            <ImageView
-                android:layout_width="14dp"
-                android:layout_height="20dp"
-                android:layout_gravity="center"
-                android:scaleType="fitCenter"
-                android:src="@drawable/arrow_gray" />
-        </LinearLayout>
-    </LinearLayout>
-    -->
 
 
 </LinearLayout>
