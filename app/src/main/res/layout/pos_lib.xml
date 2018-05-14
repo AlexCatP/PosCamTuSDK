@@ -121,6 +121,36 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/search"
+        android:layout_width="match_parent"
+        android:layout_height="46dp"
+        android:layout_marginLeft="12dp"
+        android:layout_marginRight="12dp"
+        android:layout_marginBottom="10dp"
+        android:orientation="horizontal">
+        <EditText
+            android:id="@+id/searchEdt"
+            android:hint="关键词搜索"
+            android:textColorHint="@color/textGray"
+            android:textSize="16dp"
+            android:layout_weight="19"
+            android:inputType="text"
+            android:singleLine="true"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent" />
+
+        <ImageView
+            android:id="@+id/searchBtn"
+            android:layout_gravity="center"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_weight="1"
+            android:src="@drawable/search"
+            android:scaleType="fitCenter"/>
+
+    </LinearLayout>
+
+    <LinearLayout
         android:id="@+id/loading"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
