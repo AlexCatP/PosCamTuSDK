@@ -1,16 +1,17 @@
 package com.psy.util;
 
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Environment;
 import android.widget.Toast;
 
 import com.psy.model.PosLib;
 import com.psy.model.User;
 
-import java.io.File;
 
 public class Common {
 	
@@ -21,6 +22,7 @@ public class Common {
 	public static final String [] SELF_POS_TYPE ={"女神自拍", "潮男自拍"};
 	public static final String [] POS_TYPE ={"美女","帅哥","情侣","集体","小孩"};
 	public static final String IMG_CACHE_PATH = "/PoseCamera/";
+	public static final String FULL_IMG_CACHE_PATH = "/mnt/sdcard"+IMG_CACHE_PATH;
 	public static String local_pic_path = Environment.getExternalStorageDirectory()+"/Android/data/cn.xdu.poscam/cache/imageCache/";
 	public static User user;
 	public static int userId;
@@ -29,7 +31,9 @@ public class Common {
 	public static String fragParamName;
 	public static String fragParam;
 
-	public static boolean isInit;
+	public static boolean isVisible;
+	public static AlertDialog mAlertDialog;
+
 
    public static int type2int(String type){
 	   int typeInt = 1;
@@ -55,19 +59,57 @@ public class Common {
 		Toast.makeText(context, str, Toast.LENGTH_SHORT).show();
 	}
 
-//	public static String getSimpleDraweePicPath(Uri uri){
-//			FileBinaryResource resource = (FileBinaryResource)
-//					Fresco.getImagePipelineFactory().getMainDiskStorageCache()
-//							.getResource(new SimpleCacheKey(uri.toString()));
-//		if (resource!=null) {
-//			File file = resource.getFile();
-//			if (file!=null)
-//				return file.getPath();
-//			else return null;
-//		}
-//		else return null;
-//
-//	}
+
+	public static int isNetworkAvailable(Context context) {
+		ConnectivityManager connectivityManager = (ConnectivityManager)
+				context.getSystemService(Context.CONNECTIVITY_SERVICE);
+		NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+		if(networkInfo == null || !networkInfo.isAvailable())
+		{
+			return 0;
+		}
+		else
+		{
+			return 1;
+		}
+
+	}
+
+	//////////////UI组件
+	public static void showProgressDialog(final String msg, final Context context) {
+		final Activity activity = (Activity) context;
+		activity.runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				if (!activity.isFinishing()) {
+					if (mAlertDialog == null) {
+						mAlertDialog = new GenericProgressDialog(context);
+					}
+					mAlertDialog.setMessage(msg);
+					((GenericProgressDialog) mAlertDialog)
+							.setProgressVisiable(true);
+					mAlertDialog.setCancelable(false);
+					mAlertDialog.setOnCancelListener(null);
+					mAlertDialog.show();
+					mAlertDialog.setCanceledOnTouchOutside(false);
+				}
+			}
+		});
+	}
+
+	public static void dismissProgressDialog(final Context context) {
+		final Activity activity = (Activity) context;
+		activity.runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				if (mAlertDialog != null && mAlertDialog.isShowing()
+						&& !activity.isFinishing()) {
+					mAlertDialog.dismiss();
+					mAlertDialog = null;
+				}
+			}
+		});
+	}
 
 
 }

@@ -114,7 +114,8 @@ public class HttpHelper {
 			isr.close();
 			str = resultData.toString();
 			System.out.println(str);
-
+			if(str.charAt(0)=='<')
+				str = null;
 			return str;
 		} catch (Exception e) {
 			str = " 发送GET请求出现异常：" + e;
@@ -351,6 +352,46 @@ public class HttpHelper {
 		} else {
 			return null;
 		}
+
+	}
+
+
+	/**
+	 * 解析
+	 *
+	 * @throws JSONException
+	 */
+	public static  ArrayList<HashMap<String, Object>> AnalysisUserInfo2(
+			String jsonStr) throws JSONException {
+		ArrayList<JSONObject> jsonArrayList = TOJsonArray(jsonStr);
+		if (jsonArrayList == null) {
+			return null;
+		} else {
+
+			ArrayList<HashMap<String, Object>> pArrayList = new ArrayList<>();
+
+			for (int i = 0; i < jsonArrayList.size(); i++) {
+				HashMap<String, Object> hm = new HashMap<>();
+				hm.put("userid", jsonArrayList.get(i)
+						.getInt("userId"));
+				hm.put("username",jsonArrayList.get(i)
+						.getString("userName"));
+				hm.put("userphone",jsonArrayList.get(i)
+						.getString("userPhone"));
+				hm.put("userpb",jsonArrayList.get(i)
+						.getInt("userPb"));
+				hm.put("taskpic_url", jsonArrayList.get(i)
+						.getString("userPicUrl"));
+				hm.put("password", jsonArrayList.get(i)
+						.getString("passWord"));
+				pArrayList.add(hm);
+
+			}
+			return pArrayList;
+
+
+		}
+
 
 	}
 

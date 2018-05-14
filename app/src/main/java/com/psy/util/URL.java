@@ -5,6 +5,7 @@ package com.psy.util;
  */
 public class URL {
     public static final String IP_AND_PORT = "http://119.29.245.167:80/";
+    //public static final String IP_AND_PORT = "http://115.159.124.204/";
 
     public static  final String LOGIN_URL =
             IP_AND_PORT+"PoseCamera/UserController/findUidByloginName.do";
@@ -18,6 +19,8 @@ public class URL {
             IP_AND_PORT+"PoseCamera/UserController/updateUserPbById.do";
     public static  final String UPDATE_PIC_BY_NAME_URL =
             IP_AND_PORT+"PoseCamera/UserController/updateUserPicByUname.do";
+    public static  final String FIND_ALL_USERS_URL =
+            IP_AND_PORT+"PoseCamera/UserController/findAllUsers.do";
 
 
     public static  final String UPDATE_PB_BY_PID =
