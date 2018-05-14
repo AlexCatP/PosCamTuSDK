@@ -6,6 +6,7 @@ import java.util.HashMap;
 
 import org.json.JSONException;
 import org.lasque.tusdk.psy.api.DefineCameraBase;
+import org.lasque.tusdk.psy.api.DefineCameraBaseFragment;
 
 
 import android.app.Activity;
@@ -122,24 +123,31 @@ public class LoginActivity extends Activity implements OnClickListener {
 
             } else {
 
-                try {
-                    String json = postData(userAL.get(0).getLoginName(), userAL.get(0).getPassword());
-                    HashMap<String, Object> userHM = HttpHelper.AnalysisUid(json);
-                    Common.userId = (int) userHM.get("userid");
-                    Intent intent1 = new Intent();
-                    finish();
-                    intent1.setClass(LoginActivity.this, UserActivity.class);
-                    startActivity(intent1);
+                int flag = Common.isNetworkAvailable(this);
+                if (flag == 0) {
+                    Common.display(this, "请开启手机网络");
+                } else {
 
-                } catch (JSONException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                    Common.display(LoginActivity.this, "服务器异常，请稍后再试");
-                } catch (Exception e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                    Common.display(LoginActivity.this, "服务器异常，请稍后再试");
+                    try {
+                        String json = postData(userAL.get(0).getLoginName(), userAL.get(0).getPassword());
+                        HashMap<String, Object> userHM = HttpHelper.AnalysisUid(json);
+                        Common.userId = (int) userHM.get("userid");
+                        Intent intent1 = new Intent();
+                        finish();
+                        intent1.setClass(LoginActivity.this, UserActivity.class);
+                        startActivity(intent1);
+
+                    } catch (JSONException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                        Common.display(LoginActivity.this, "服务器异常，请稍后再试");
+                    } catch (Exception e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                        Common.display(LoginActivity.this, "服务器异常，请稍后再试");
+                    }
                 }
+
 
             }
         }
@@ -202,11 +210,13 @@ public class LoginActivity extends Activity implements OnClickListener {
     @Override
     public void onClick(View v) {
         if (v == imgBack) {
+            DefineCameraBaseFragment.bmp1 = null;
+            Common.bitmap = null;
             finish();
             new DefineCameraBase().showSample(this);
         }
-        if (v==forgerPw){
-            Common.display(LoginActivity.this,"敬请期待");
+        if (v == forgerPw) {
+            Common.display(LoginActivity.this, "敬请期待");
         }
         if (v == regText) {
             Intent intent = new Intent();
@@ -216,23 +226,53 @@ public class LoginActivity extends Activity implements OnClickListener {
         }
 
         if (v == btnLogin) {
-            if (!edLoginname.getText().toString().equals("")
-                    && !edPassword.getText().toString().equals("")) {
-                try {
 
-                    if (intentParam != null && intentParam.equals("logout")) {
-                        if (!edLoginname.getText().toString().equals(userAL.get(0).getLoginName())
-                                || !edPassword.getText().toString().equals(userAL.get(0).getPassword()))
-                        //判断用户是否修改了文本框
-                        {
+
+            int flag = Common.isNetworkAvailable(this);
+            if (flag == 0) {
+                Common.display(this, "请开启手机网络");
+            } else {
+
+                if (!edLoginname.getText().toString().equals("")
+                        && !edPassword.getText().toString().equals("")) {
+                    try {
+
+                        if (intentParam != null && intentParam.equals("logout")) {
+                            if (!edLoginname.getText().toString().equals(userAL.get(0).getLoginName())
+                                    || !edPassword.getText().toString().equals(userAL.get(0).getPassword()))
+                            //判断用户是否修改了文本框
+                            {
+                                md5pw = EncodeAndDecode.getMD5Str(edPassword.getText().toString());
+                                String json = postData(edLoginname.getText().toString(), md5pw);
+                                HashMap<String, Object> userHM = HttpHelper.AnalysisUid(json);
+                                if (userHM != null) {
+                                    Common.userId = (int) userHM.get("userid");
+                                    dbServer = new DBServer(this);
+                                    dbServer.updateUser(Common.userId,
+                                            edLoginname.getText().toString(), md5pw);
+
+                                    Intent intent = new Intent();
+                                    finish();
+                                    intent.setClass(LoginActivity.this, UserActivity.class);
+                                    startActivity(intent);
+                                } else {
+                                    Common.display(LoginActivity.this, "登录失败,用户名或密码错误");
+                                }
+
+                            } else {
+                                Intent intent = new Intent();
+                                finish();
+                                intent.setClass(LoginActivity.this, UserActivity.class);
+                                startActivity(intent);
+                            }
+                        } else {
                             md5pw = EncodeAndDecode.getMD5Str(edPassword.getText().toString());
                             String json = postData(edLoginname.getText().toString(), md5pw);
                             HashMap<String, Object> userHM = HttpHelper.AnalysisUid(json);
                             if (userHM != null) {
                                 Common.userId = (int) userHM.get("userid");
                                 dbServer = new DBServer(this);
-                                dbServer.updateUser(Common.userId,
-                                        edLoginname.getText().toString(), md5pw);
+                                dbServer.updateUser(Common.userId, edLoginname.getText().toString(), md5pw);
 
                                 Intent intent = new Intent();
                                 finish();
@@ -241,42 +281,22 @@ public class LoginActivity extends Activity implements OnClickListener {
                             } else {
                                 Common.display(LoginActivity.this, "登录失败,用户名或密码错误");
                             }
-
-                        } else {
-                            Intent intent = new Intent();
-                            finish();
-                            intent.setClass(LoginActivity.this, UserActivity.class);
-                            startActivity(intent);
                         }
-                    } else {
-                        md5pw = EncodeAndDecode.getMD5Str(edPassword.getText().toString());
-                        String json = postData(edLoginname.getText().toString(), md5pw);
-                        HashMap<String, Object> userHM = HttpHelper.AnalysisUid(json);
-                        if (userHM != null) {
-                            Common.userId = (int) userHM.get("userid");
-                            dbServer = new DBServer(this);
-                            dbServer.updateUser(Common.userId, edLoginname.getText().toString(), md5pw);
-
-                            Intent intent = new Intent();
-                            finish();
-                            intent.setClass(LoginActivity.this, UserActivity.class);
-                            startActivity(intent);
-                        } else {
-                            Common.display(LoginActivity.this, "登录失败,用户名或密码错误");
-                        }
+                    } catch (JSONException e) {
+                        // TODO Auto-generated catch block
+                        Common.display(LoginActivity.this, "登录失败");
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        Common.display(LoginActivity.this, "登录失败");
+                        e.printStackTrace();
+                    } catch (Exception e) {
+                        Common.display(LoginActivity.this, "登录失败");
+                        e.printStackTrace();
                     }
-                } catch (JSONException e) {
-                    // TODO Auto-generated catch block
-                    Common.display(LoginActivity.this, "登录失败");
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    Common.display(LoginActivity.this, "登录失败");
-                    e.printStackTrace();
-                } catch (Exception e) {
-                    Common.display(LoginActivity.this, "登录失败");
-                    e.printStackTrace();
                 }
             }
+
+
         }
     }
 
@@ -293,6 +313,10 @@ public class LoginActivity extends Activity implements OnClickListener {
     public boolean onKeyDown(int keyCode, KeyEvent event) {
 
         if (keyCode == KeyEvent.KEYCODE_BACK) {
+            DefineCameraBaseFragment.bmp1 = null;
+            Common.bitmap = null;
+            Common.fragParamName = null;
+            Common.fragParam = null;
             new DefineCameraBase().showSample(this);
             finish();
             return true;

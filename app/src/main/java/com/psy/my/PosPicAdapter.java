@@ -11,7 +11,10 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 
 import com.nostra13.universalimageloader.core.*;
+import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.assist.ImageScaleType;
+import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
+import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 import com.psy.util.Common;
 import com.psy.util.HttpHelper;
 import com.psy.util.SquareLayout;
@@ -84,10 +87,43 @@ public class PosPicAdapter extends BaseAdapter {
         }
 
 
-        String path =
+        final String path =
                 "http://" + data.get(position).get("pospic").toString();
 
-        com.nostra13.universalimageloader.core.ImageLoader.getInstance().displayImage(path, holder.posPic, options);
+
+
+
+        //防止图片闪烁
+        final String tag = (String) holder.posPic.getTag();
+
+
+
+        if (tag==null||!tag.equals(path)) {
+            holder.posPic.setTag(path);
+            com.nostra13.universalimageloader.core.ImageLoader.getInstance()
+                    .displayImage(path, holder.posPic, options, new ImageLoadingListener() {
+                @Override
+                public void onLoadingStarted(String s, View view) {
+
+                }
+
+                @Override
+                public void onLoadingFailed(String s, View view, FailReason failReason) {
+
+                }
+
+                @Override
+                public void onLoadingComplete(String s, View view, Bitmap bitmap) {
+                    holder.posPic.setTag(path);//确保下载完成再打tag.
+                }
+
+                @Override
+                public void onLoadingCancelled(String s, View view) {
+
+                }
+            });
+        }
+
 
         final String localPath = Common.local_pic_path + path.hashCode();
 

@@ -61,32 +61,40 @@ public class SettingActivity extends Activity implements View.OnClickListener {
         myPhone = (TextView) findViewById(R.id.myPhone);
         myCache = (TextView) findViewById(R.id.myCache);
 
-        imgBack.setOnClickListener(this);
-        backCamera.setOnClickListener(this);
-        changePw.setOnClickListener(this);
-        changeName.setOnClickListener(this);
-        changeHeadPic.setOnClickListener(this);
-        changePhone.setOnClickListener(this);
-        clearCache.setOnClickListener(this);
-        logoutll.setOnClickListener(this);
 
-        if (Common.user != null) {
-            myName.setText(Common.user.getUserName());
-            myPhone.setText(Common.user.getUserphone().
-                    replaceAll("(\\d{3})\\d{4}(\\d{4})", "$1****$2"));
+        int flag = Common.isNetworkAvailable(SettingActivity.this);
+        if (flag==0){
+           Common.display(SettingActivity.this,"请开启手机网络");
+        }else {
+            imgBack.setOnClickListener(this);
+            backCamera.setOnClickListener(this);
+            changePw.setOnClickListener(this);
+            changeName.setOnClickListener(this);
+            changeHeadPic.setOnClickListener(this);
+            changePhone.setOnClickListener(this);
+            clearCache.setOnClickListener(this);
+            logoutll.setOnClickListener(this);
+
+            if (Common.user != null) {
+                myName.setText(Common.user.getUserName());
+                myPhone.setText(Common.user.getUserphone().
+                        replaceAll("(\\d{3})\\d{4}(\\d{4})", "$1****$2"));
+            }
+
+            Intent intent = getIntent();
+            localPath = intent.getStringExtra("image_path");
+            if (localPath != null) {
+                bitmap = BitmapFactory.decodeFile(localPath);
+                myHead.setImageBitmap(bitmap);
+            } else myHead.setImageResource(R.drawable.userphoto);
+
+            // start = System.nanoTime();
+            fileSizeString = FileManager
+                    .fileSizeCal(new File(Common.local_pic_path));
+            myCache.setText(fileSizeString);
+
         }
 
-        Intent intent = getIntent();
-        localPath = intent.getStringExtra("image_path");
-        if (localPath != null) {
-            bitmap = BitmapFactory.decodeFile(localPath);
-            myHead.setImageBitmap(bitmap);
-        } else myHead.setImageResource(R.drawable.userphoto);
-
-        // start = System.nanoTime();
-        fileSizeString = FileManager
-                .fileSizeCal(new File(Common.local_pic_path));
-        myCache.setText(fileSizeString);
 
     }
 

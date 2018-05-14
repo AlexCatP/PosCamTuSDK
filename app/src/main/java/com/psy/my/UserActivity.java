@@ -34,7 +34,7 @@ import java.util.HashMap;
 import cn.xdu.poscam.R;
 
 public class UserActivity extends Activity implements View.OnClickListener {
-    private ImageView btnBackCam, btnSetting, uploadBtn,addBtn;
+    private ImageView btnBackCam, btnSetting, uploadBtn,addBtn,rankBtn;
     private ImageView myHead;
     private TextView myPb, myName;
     private GridView gridView;
@@ -64,7 +64,7 @@ public class UserActivity extends Activity implements View.OnClickListener {
                             .build();//
                     com.nostra13.universalimageloader.core.ImageLoader.getInstance().displayImage(
                             "http://" + Common.user.getUserPicUrl(), myHead, options);
-                    myPb.setText("P币：" + Common.user.getPb());
+                    myPb.setText("P币 " + Common.user.getPb());
                     myName.setText(Common.user.getUserName() + "");
                     loadData(picLists);
                     break;
@@ -81,7 +81,7 @@ public class UserActivity extends Activity implements View.OnClickListener {
                             .build();//
                     com.nostra13.universalimageloader.core.ImageLoader.getInstance().displayImage(
                             "http://" + Common.user.getUserPicUrl(), myHead, options1);
-                    myPb.setText("P币：" + Common.user.getPb());
+                    myPb.setText("P币 " + Common.user.getPb());
                     myName.setText(Common.user.getUserName() + "");
                     break;
                 case 0:
@@ -124,6 +124,9 @@ public class UserActivity extends Activity implements View.OnClickListener {
         myPb = (TextView) findViewById(R.id.myPb);
         myName = (TextView) findViewById(R.id.myName);
         hideAdd = (RelativeLayout) findViewById(R.id.hideAdd);
+
+        rankBtn = (ImageView) findViewById(R.id.rankBtn);
+        rankBtn.setOnClickListener(this);
 
     }
 
@@ -186,9 +189,14 @@ public class UserActivity extends Activity implements View.OnClickListener {
                         msg.obj = "暂未上传pose";
                         handler.sendMessage(msg);
                     } else {
+                        int flag = Common.isNetworkAvailable(UserActivity.this);
                         Message msg = handler.obtainMessage();
                         msg.what = 0;
-                        msg.obj = "未加载到数据";
+                        if (flag==0){
+                            msg.obj = "请开启手机网络";
+                        }else {
+                            msg.obj = "未加载到数据";
+                        }
                         handler.sendMessage(msg);
                     }
                 } catch (JSONException e) {
@@ -261,6 +269,10 @@ public class UserActivity extends Activity implements View.OnClickListener {
     public boolean onKeyDown(int keyCode, KeyEvent event) {
 
         if (keyCode == KeyEvent.KEYCODE_BACK) {
+            DefineCameraBaseFragment.bmp1 = null;
+            Common.bitmap = null;
+            Common.fragParamName = null;
+            Common.fragParam = null;
             new DefineCameraBase().showSample(this);
             finish();
             return true;
@@ -272,6 +284,10 @@ public class UserActivity extends Activity implements View.OnClickListener {
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.btnBackCam:
+                DefineCameraBaseFragment.bmp1 = null;
+                Common.bitmap = null;
+                Common.fragParamName = null;
+                Common.fragParam = null;
                 new DefineCameraBase().showSample(this);
                 finish();
                 break;
@@ -292,6 +308,12 @@ public class UserActivity extends Activity implements View.OnClickListener {
                 intent1.setClass(UserActivity.this, UploadActivity.class);
                 finish();
                 UserActivity.this.startActivity(intent1);
+                break;
+            case R.id.rankBtn:
+                Intent intent2 = new Intent();
+                intent2.setClass(UserActivity.this, RankActivity.class);
+                finish();
+                UserActivity.this.startActivity(intent2);
                 break;
         }
     }

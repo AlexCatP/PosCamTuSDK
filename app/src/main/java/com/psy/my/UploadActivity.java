@@ -23,11 +23,11 @@ import android.widget.Toast;
 import com.psy.model.YouTuTag;
 import com.psy.util.Common;
 import com.psy.util.DateTimeHelper;
+import com.psy.util.GenericProgressDialog;
 import com.psy.util.HttpHelper;
 import com.psy.util.URL;
 import com.youtu.Youtu;
 
-import gaochun.camera.GenericProgressDialog;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.lasque.tusdk.psy.api.DefineCameraBaseFragment;
@@ -45,7 +45,6 @@ import cn.finalteam.galleryfinal.FunctionConfig;
 import cn.finalteam.galleryfinal.GalleryFinal;
 import cn.finalteam.galleryfinal.model.PhotoInfo;
 import cn.xdu.poscam.R;
-import gaochun.camera.PhotoProcessActivity;
 
 public class UploadActivity extends Activity implements View.OnClickListener {
     private ImageView imgBack, posPic;
@@ -100,53 +99,71 @@ public class UploadActivity extends Activity implements View.OnClickListener {
         poseTypell = (LinearLayout) findViewById(R.id.poseTypell);
         poseTypell.setOnClickListener(this);
 
-        posPic.setOnClickListener(this);
-        imgBack.setOnClickListener(this);
 
-        Intent intent = getIntent();
-        String path = intent.getStringExtra("upload");
-        if (path != null) {
-            localpath = path;
-            bmp = BitmapFactory.decodeFile(path);
-            posPic.setImageBitmap(bmp);
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    Looper.prepare();
-                    // 数据返回
-                    Youtu faceYoutu = new Youtu(Common.APP_ID,
-                            Common.SECRET_ID, Common.SECRET_KEY,
-                            Youtu.API_YOUTU_END_POINT);
-                    // Bitmap selectedImage =
-                    // BitmapFactory.decodeResource(getResources(),
-                    // R.drawable.testbg);
-                    try {
-                        showProgressDialog("分析标签中");
-                        respose = faceYoutu.ImageTag(bmp);
-                    } catch (KeyManagementException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    } catch (NoSuchAlgorithmException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    } catch (IOException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    } catch (JSONException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
-                    Message msg = handler.obtainMessage();
-                    msg.what = 1;
-                    msg.obj = respose;
-                    handler.sendMessage(msg);
-                    System.out.println(respose + "");
-                    Looper.loop();
-                }
-            }
 
-            ).start();
+        int flag = Common.isNetworkAvailable(UploadActivity.this);
+        if (flag==0){
+            Common.display(UploadActivity.this,"请开启手机网络");
         }
+        else
+
+        {
+            posPic.setOnClickListener(this);
+            imgBack.setOnClickListener(this);
+
+            Intent intent = getIntent();
+            String path = intent.getStringExtra("upload");
+            if (path != null) {
+                localpath = path;
+                System.out.println("localpath="+localpath);
+                bmp = BitmapFactory.decodeFile(path);
+                posPic.setImageBitmap(bmp);
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Looper.prepare();
+                        // 数据返回
+                        Youtu faceYoutu = new Youtu(Common.APP_ID,
+                                Common.SECRET_ID, Common.SECRET_KEY,
+                                Youtu.API_YOUTU_END_POINT);
+                        // Bitmap selectedImage =
+                        // BitmapFactory.decodeResource(getResources(),
+                        // R.drawable.testbg);
+                        try {
+                            showProgressDialog("分析标签中");
+                            respose = faceYoutu.ImageTag(bmp);
+                        } catch (KeyManagementException e) {
+                            // TODO Auto-generated catch block
+                            dismissProgressDialog();
+                            e.printStackTrace();
+                        } catch (NoSuchAlgorithmException e) {
+                            // TODO Auto-generated catch block
+                            dismissProgressDialog();
+                            e.printStackTrace();
+                        } catch (IOException e) {
+                            // TODO Auto-generated catch block
+                            dismissProgressDialog();
+                            e.printStackTrace();
+                        } catch (JSONException e) {
+                            // TODO Auto-generated catch block
+                            dismissProgressDialog();
+                            e.printStackTrace();
+                        }
+                        Message msg = handler.obtainMessage();
+                        msg.what = 1;
+                        msg.obj = respose;
+                        handler.sendMessage(msg);
+                        System.out.println(respose + "");
+                        Looper.loop();
+                    }
+                }
+
+                ).start();
+            }
+        }
+
+
+
 
     }
 
@@ -209,10 +226,10 @@ public class UploadActivity extends Activity implements View.OnClickListener {
 
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             Intent intent = new Intent();
-            if (localpath!=null)
+            if (localpath != null)
                 intent.setClass(UploadActivity.this, PhotoProcessActivity.class);
             else
-            intent.setClass(UploadActivity.this, UserActivity.class);
+                intent.setClass(UploadActivity.this, UserActivity.class);
             finish();
             UploadActivity.this.startActivity(intent);
             return true;
@@ -224,7 +241,7 @@ public class UploadActivity extends Activity implements View.OnClickListener {
     public void onClick(View view) {
         if (view == imgBack) {
             Intent intent = new Intent();
-            if (localpath!=null)
+            if (localpath != null)
                 intent.setClass(UploadActivity.this, PhotoProcessActivity.class);
             else
                 intent.setClass(UploadActivity.this, UserActivity.class);
@@ -242,7 +259,7 @@ public class UploadActivity extends Activity implements View.OnClickListener {
                     .setEnableCrop(true)//裁剪功能
                     .setEnableCamera(false)//相机功能
                     .build();
-            GalleryFinal.openGallerySingle(REQUEST_CODE_GALLERY, functionConfig,mOnHanlderResultCallback);
+            GalleryFinal.openGallerySingle(REQUEST_CODE_GALLERY, functionConfig, mOnHanlderResultCallback);
         }
 
         if (view == uploadBtn) {
@@ -257,7 +274,7 @@ public class UploadActivity extends Activity implements View.OnClickListener {
                 isConnectWS = false;
             }
             if (posTagsTxt.getText().toString().trim().length() == 0 &&
-                    posTags.getText().toString().trim().length()==0) {
+                    posTags.getText().toString().trim().length() == 0) {
                 Common.display(UploadActivity.this, "标签不能为空");
                 isConnectWS = false;
             }
@@ -275,63 +292,63 @@ public class UploadActivity extends Activity implements View.OnClickListener {
                 uploadBtn.setText("正在上传...");
                 showProgressDialog1("正在上传...");
 
-                    Timer timer = new Timer();
-                    TimerTask task = new TimerTask() {
-                        @Override
-                        public void run() {
-                            try{
+                Timer timer = new Timer();
+                TimerTask task = new TimerTask() {
+                    @Override
+                    public void run() {
+                        try {
                             int res = 0;
-                //判断图片是否被修改
-                if (!isPicChange)
-                    res = HttpHelper.getCode(postData(localpath));
-                else res = HttpHelper.getCode(postData(picpath));
-                if (res == 100) {
-                    String tags = "";
-                    if (posTags.getText().toString().trim().length() == 0) {
-                        tags = posTagsTxt.getText().toString().substring(0, posTagsTxt.getText().toString().length() - 1).replace(" ", "_");
-                    } else
-                        tags = (posTagsTxt.getText().toString() + posTags.getText().toString()).replace(" ", "_");
-                    String [] tagArray = tags.split("_");
-                    String tagJson ="";
-                    for (int i=0;i<tagArray.length;i++){
-                        tagJson = HttpHelper.sendGet(URL.INSERT_TAG,"pos_tag="+tagArray[i]);
-
-                    }
-                    if (HttpHelper.getCode(tagJson)==100 || HttpHelper.getCode(tagJson)==102) {
-                        Looper.prepare();
-                        Common.display(UploadActivity.this, "上传成功");
-                        dismissProgressDialog();
-                        Intent inte = new Intent();
-                        finish();
-                        inte.setClass(UploadActivity.this, UserActivity.class);
-                        startActivity(inte);
-                        Looper.loop();
-                    }else {
-                        Looper.prepare();
-                        Common.display(UploadActivity.this, "上传失败:INSERT_TAG");
-                        dismissProgressDialog();
-                        Looper.loop();
-                    }
-                } else{
-                    Looper.prepare();
-                    Common.display(UploadActivity.this, "上传失败:INSERT_POS");
-                    dismissProgressDialog();
-                    Looper.loop();
-                }
+                            //判断图片是否被修改
+                            if (!isPicChange)
+                                res = HttpHelper.getCode(postData(localpath));
+                            else res = HttpHelper.getCode(postData(picpath));
+                            if (res == 100) {
+//                                String tags = "";
+//                                if (posTags.getText().toString().trim().length() == 0) {
+//                                    tags = posTagsTxt.getText().toString().substring(0, posTagsTxt.getText().toString().length() - 1).replace(" ", "_");
+//                                } else
+//                                    tags = (posTagsTxt.getText().toString() + posTags.getText().toString()).replace(" ", "_");
+//                                String[] tagArray = tags.split("_");
+//                                String tagJson = "";
+//                                for (int i = 0; i < tagArray.length; i++) {
+//                                    tagJson = HttpHelper.sendGet(URL.INSERT_TAG, "pos_tag=" + tagArray[i]);
+//
+//                                }
+                              //  if (HttpHelper.getCode(tagJson) == 100 || HttpHelper.getCode(tagJson) == 102) {
+                                    Looper.prepare();
+                                    Common.display(UploadActivity.this, "上传成功");
+                                    dismissProgressDialog();
+                                    Intent inte = new Intent();
+                                    finish();
+                                    inte.setClass(UploadActivity.this, UserActivity.class);
+                                    startActivity(inte);
+                                    Looper.loop();
+//                                } else {
+//                                    Looper.prepare();
+//                                    Common.display(UploadActivity.this, "上传失败:INSERT_TAG");
+//                                    dismissProgressDialog();
+//                                    Looper.loop();
+//                                }
+                            } else {
+                                Looper.prepare();
+                                Common.display(UploadActivity.this, "上传失败:INSERT_POS");
+                                dismissProgressDialog();
+                                Looper.loop();
+                            }
 
                         } catch (Exception e) {
                             // TODO Auto-generated catch block
                             e.printStackTrace();
-                                Looper.prepare();
+                            Looper.prepare();
                             Common.display(UploadActivity.this, "服务器出错，请稍后再试");
-                                dismissProgressDialog();
-                                Looper.loop();
+                            dismissProgressDialog();
+                            Looper.loop();
                         }
 
-                        }
+                    }
 
-                    };
-                    timer.schedule(task, 100);
+                };
+                timer.schedule(task, 100);
 
 
             } catch (Exception e) {
@@ -382,12 +399,11 @@ public class UploadActivity extends Activity implements View.OnClickListener {
         return HttpHelper.postData(URL.INSERT_POS, paramHM, fileHM);
     }
 
-    public String postData(String url,String tag) throws Exception {
+    public String postData(String url, String tag) throws Exception {
         HashMap<String, String> paramHM = new HashMap<>();
         paramHM.put("tag", tag);
         return HttpHelper.postData(url, paramHM, null);
     }
-
 
 
     GalleryFinal.OnHanlderResultCallback mOnHanlderResultCallback = new GalleryFinal.OnHanlderResultCallback() {
@@ -450,8 +466,6 @@ public class UploadActivity extends Activity implements View.OnClickListener {
 
         }
     };
-
-
 
 
     @Override

@@ -58,13 +58,12 @@ public class SplashScreenActivity extends  Activity {
 //						// your code using Camera2 API here - is api 21 or higher
 //						Common.display(SplashScreenActivity.this,"暂不支持安卓5.0及以上版本...");
 //					}
-
 				}
-				
 			}
 		};
 		timer.schedule(task, 1400);
 	}
+
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 
